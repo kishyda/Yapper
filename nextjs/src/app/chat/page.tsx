@@ -1,10 +1,22 @@
 "use client";
 import { useState } from "react";
 import styles from './styles.module.css'
+import { headers } from "next/headers";
+
+// When sending a websocket message to the server, send the message in the following format
+interface Message {
+    accountID: string;
+    chatID: string;
+    message: string | null;
+    time: string | null;
+    close: boolean
+}
 
 export default function Chat() {
 
+    // Also create queries into the URL to get the accountID, userName, and chatID
     const webSocket = new WebSocket("ws://localhost:8080/ws");
+
     webSocket.onopen = () => {
         console.log("Connected to server");
     }
@@ -16,18 +28,9 @@ export default function Chat() {
     const [errorMessage, setErrorMessage] = useState("");
     const [wsMessage, setwsMessage] = useState("");
 
+    // Change sendMessage to send to the golang server
     const sendMessage = async () => {
-        const response = await fetch("/api/chat", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ message: textContent }),
-        })
-        if (!response.ok) {
-            console.error(response.statusText);
-            setErrorMessage(response.statusText);
-        }
+        webSocket.send(textContent);
     }
     return (
         <>
