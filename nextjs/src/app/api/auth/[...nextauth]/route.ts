@@ -20,6 +20,12 @@ const handler = NextAuth({
             clientSecret: googleClientSecret
         })
     ],
+    callbacks: {
+        async session({ session, token, user }: any): Promise<any> {
+            session.user.id = "123"
+            return session;
+        }
+    },
     secret: nextAuthSecret
 });
 

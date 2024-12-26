@@ -32,6 +32,10 @@ type Error struct {
 	Message string `json:"message"`
 }
 
+type Success struct {
+	Message string `json:"message"`
+}
+
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
@@ -46,36 +50,42 @@ var version string
 var database *sql.DB
 var err error
 
-func writeMessageToDatabase(message *Message) {
+func writeMessageToDatabase(conn *websocket.Conn, message *Message) {
 	tx, err := database.Begin()
 	if err != nil {
 		fmt.Print("Error beginning transaction\n")
+		conn.WriteJSON(Error{Message: "writeMessageToDatabase Error: Error beginning transaction"})
 		return
 	}
 	statement, err := tx.Prepare(`INSERT INTO ? (accountID, accountName, chatID, chatName, message, time) VALUES (?, ?, ?, ?, ?, ?)`)
 	if err != nil {
 		fmt.Print("Error preparing statement\n")
+		conn.WriteJSON(Error{Message: "writeMessageToDatabase Error: Error preparing statement"})
 		return
 	}
 	_, err = statement.Exec(message.ChatID, message.AccountID, message.AccountName, message.ChatID, message.ChatName, message.Message, message.Time)
 	if err != nil {
 		fmt.Print("Error executing statement\n")
+		conn.WriteJSON(Error{Message: "writeMessageToDatabase Error: Error executing statement"})
 		return
 	}
 
 	err = tx.Commit()
 	if err != nil {
 		fmt.Print("Error committing transaction\n")
+		conn.WriteJSON(Error{Message: "writeMessageToDatabase Error: Error committing transaction"})
 		return
 	}
 	fmt.Print("Message written to database\n")
+	conn.WriteJSON(Success{Message: "Message written to database"})
 }
 
-func sendMessage(message *Message) {
+func sendMessage(conn *websocket.Conn, message *Message) {
 	var users string
 	err := database.QueryRow(`SELECT users FROM CHAT WHERE chatID = ?`, message.ChatID).Scan(&users)
 	if err != nil {
 		fmt.Print("Error querying database\n")
+		conn.WriteJSON(Error{Message: "Error querying database"})
 		return
 	}
 	var userArray []string
@@ -85,10 +95,12 @@ func sendMessage(message *Message) {
 			err := connections[user].WriteJSON(message)
 			if err != nil {
 				fmt.Print("Error writing message\n")
+				conn.WriteJSON(Error{Message: "Error writing message"})
 				return
 			}
 		}
 	}
+	conn.WriteJSON(Success{Message: "Message sent"})
 }
 
 func handleConnection(w http.ResponseWriter, r *http.Request) {
@@ -110,8 +122,8 @@ func handleConnection(w http.ResponseWriter, r *http.Request) {
 			w.Write([]byte("Connection closed"))
 			return
 		}
-		writeMessageToDatabase(&messageObject)
-		sendMessage(&messageObject)
+		writeMessageToDatabase(conn, &messageObject)
+		sendMessage(conn, &messageObject)
 	}
 }
 
