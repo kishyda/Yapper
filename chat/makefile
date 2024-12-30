@@ -1,5 +1,5 @@
 b:
-	go build -o ./main ./cmd/chat/main.go
+	go build -o ./bin/main ./cmd/chat/main.go
 
 r:
-	./main
+	./bin/main
