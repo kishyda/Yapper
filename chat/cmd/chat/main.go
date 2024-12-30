@@ -166,6 +166,10 @@ func handleConnection(w http.ResponseWriter, r *http.Request, userID string) {
 				}
 				return
 			}
+			if message.Close == true {
+				fmt.Print("Closing websocket\n")
+				return
+			}
 			go sendMessage(conn, &message)
 			go writeMessageToDatabase(conn, &message)
 		}
