@@ -1,6 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig = {
+    //    experimental: {
+    //    turbopack: true, // Enable Turbopack
+    //},
     async headers() {
         return [
             {
@@ -13,7 +16,23 @@ const nextConfig = {
                 ]
             }
         ]
-    }
+    },
+    //// @ts-ignore
+    //webpack(config, { isServer }) {
+    //    if (!isServer) {
+    //        // Set the devtoolModuleFilenameTemplate for client-side builds
+    //        config.devtool = 'source-map'; // Ensure you're using source maps
+    //        config.module.rules.push({
+    //          test: /\.css$/,
+    //          use: ['style-loader', 'css-loader'],
+    //        });
+    //
+    //        // Customize the source map output for modules
+    //        config.output.devtoolModuleFilenameTemplate = 'http://yourdomain.com/[namespace]/[resource-path]';
+    //    }
+    //
+    //    return config;
+    //},
 }
 
 module.exports = nextConfig

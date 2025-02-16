@@ -9,6 +9,7 @@ export default function Page() {
 
     const [userID, setUserID] = useState('');
     const [message, setMessage] = useState('');
+    let timeout: NodeJS.Timeout;
 
     const startWebSocket = () => {
         webSocket = new WebSocket(`ws://localhost:8080/ws/?userID=${userID}`);
@@ -16,6 +17,7 @@ export default function Page() {
         webSocket.onopen = () => {
             console.log("Connected to server");
         }
+
         webSocket.onmessage = async (event) => {
             const str = message + String(event.data);
             console.log(str)
@@ -40,6 +42,13 @@ export default function Page() {
         webSocket.send(JSON.stringify(messageObject));
     }
 
+    const search = () => {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => {
+            console.log("searching...");
+        }, 1000)
+    }
+
     return (
         <>
             <div>
@@ -58,6 +67,14 @@ export default function Page() {
                 <>some text</>
                 <button className={styles.button}>something</button>
                 <button className={styles.button}>else</button>
+            </div>
+            <div>
+                <>Search functionality</>
+                <input className={styles.input} type="text" placeholder="Search..." onChange={() => search()}/>
+            </div>
+            <div>
+                <>Video and audio</>
+                <input placeholder="hi"></input>
             </div>
         </>
     );
